@@ -3,167 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Score Dashboard</title>
+  <title>Student Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
       margin: 0;
-      background-color: #f8f8f8;
+      padding: 1rem;
+      background-color: #f9f9f9;
     }
-    h1, h2 {
-      color: #333;
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .search-box {
       text-align: center;
+      margin-bottom: 2rem;
     }
-    .chart-container {
-      max-width: 100%;
-      margin: 30px auto;
-      padding: 0 10px;
+
+    .search-box input {
+      padding: 10px;
+      font-size: 1rem;
+      width: 80%;
+      max-width: 400px;
     }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
     canvas {
       width: 100% !important;
       height: auto !important;
+      max-height: 300px;
     }
-    .search-section {
-      text-align: center;
-      margin-top: 40px;
-    }
-    input[type="text"] {
-      padding: 12px;
-      width: 90%;
-      max-width: 400px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .result {
-      margin-top: 20px;
-      font-size: 18px;
-      padding: 15px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      display: inline-block;
-    }
-    @media (max-width: 500px) {
-      h1, h2 {
-        font-size: 20px;
-      }
-      .result {
-        font-size: 16px;
-        padding: 10px;
+
+    @media (min-width: 768px) {
+      .charts {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search student name..." oninput="searchStudent()" />
+      <p id="result"></p>
+    </div>
 
-  <h1>Student Score Dashboard</h1>
-
-  <div class="chart-container">
-    <canvas id="barChart"></canvas>
-  </div>
-
-  <div class="chart-container">
-    <canvas id="pieChart"></canvas>
-  </div>
-
-  <div class="search-section">
-    <h2>Check Your Score</h2>
-    <input type="text" id="searchBox" placeholder="Enter your full name" />
-    <div class="result" id="searchResult"></div>
+    <div class="charts">
+      <canvas id="barChart"></canvas>
+      <canvas id="lineChart"></canvas>
+    </div>
   </div>
 
   <script>
-    // Student scores
-    const students = [
-      { name: "Ali Khan", score: 45 },
-      { name: "Sarah Ahmed", score: 38 },
-      { name: "Mohamed Salah", score: 50 },
-      { name: "Zara Hussain", score: 42 },
-      { name: "Omar Farooq", score: 30 },
-      { name: "Ayesha Noor", score: 44 },
-      { name: "Bilal Sheikh", score: 25 }
-    ];
+    // Sample scores
+    const studentScores = {
+      "Ali": 42,
+      "Sara": 38,
+      "John": 47,
+      "Fatima": 45,
+      "Adeel": 33
+    };
 
-    // Bar chart
-    const names = students.map(s => s.name);
-    const scores = students.map(s => s.score);
+    function searchStudent() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const result = document.getElementById("result");
+      const found = Object.entries(studentScores).find(
+        ([name]) => name.toLowerCase() === input
+      );
+      result.textContent = found
+        ? `${found[0]}'s score: ${found[1]}/50`
+        : input ? "Student not found" : "";
+    }
 
-    new Chart(document.getElementById("barChart"), {
-      type: 'bar',
+    // Bar chart (Top 5 students for example)
+    const barCtx = document.getElementById("barChart").getContext("2d");
+    new Chart(barCtx, {
+      type: "bar",
       data: {
-        labels: names,
+        labels: Object.keys(studentScores),
         datasets: [{
-          label: 'Scores out of 50',
-          data: scores,
-          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+          label: "Scores out of 50",
+          data: Object.values(studentScores),
+          backgroundColor: "#4285f4"
         }]
       },
       options: {
         responsive: true,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Scores by Student'
-          },
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 50
-          }
-        }
+        maintainAspectRatio: false
       }
     });
 
-    // Pie chart - pass/fail
-    const passed = students.filter(s => s.score >= 35).length;
-    const failed = students.length - passed;
-
-    new Chart(document.getElementById("pieChart"), {
-      type: 'pie',
+    // Line chart (Same data)
+    const lineCtx = document.getElementById("lineChart").getContext("2d");
+    new Chart(lineCtx, {
+      type: "line",
       data: {
-        labels: ["Passed", "Failed"],
+        labels: Object.keys(studentScores),
         datasets: [{
-          data: [passed, failed],
-          backgroundColor: ['green', 'red']
+          label: "Performance Trend",
+          data: Object.values(studentScores),
+          borderColor: "#34a853",
+          backgroundColor: "rgba(52,168,83,0.2)",
+          fill: true
         }]
       },
       options: {
         responsive: true,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Pass vs Fail Distribution'
-          }
-        }
-      }
-    });
-
-    // Search function
-    document.getElementById("searchBox").addEventListener("input", function () {
-      const query = this.value.trim().toLowerCase();
-      const resultBox = document.getElementById("searchResult");
-
-      if (!query) {
-        resultBox.innerHTML = '';
-        return;
-      }
-
-      const student = students.find(s => s.name.toLowerCase() === query);
-
-      if (student) {
-        resultBox.innerHTML = `<strong>${student.name}</strong>, your score is <strong>${student.score}</strong> out of 50.`;
-      } else {
-        resultBox.innerHTML = `Name not found. Please check spelling.`;
+        maintainAspectRatio: false
       }
     });
   </script>
-
 </body>
 </html>

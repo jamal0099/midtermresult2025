@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Score Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background-color: #f8f8f8;
+    }
+    h1, h2 {
+      color: #333;
+      text-align: center;
+    }
+    .chart-container {
+      max-width: 100%;
+      margin: 30px auto;
+      padding: 0 10px;
+    }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+    .search-section {
+      text-align: center;
+      margin-top: 40px;
+    }
+    input[type="text"] {
+      padding: 12px;
+      width: 90%;
+      max-width: 400px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 15px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      display: inline-block;
+    }
+    @media (max-width: 500px) {
+      h1, h2 {
+        font-size: 20px;
+      }
+      .result {
+        font-size: 16px;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Student Score Dashboard</h1>
+
+  <div class="chart-container">
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="pieChart"></canvas>
+  </div>
+
+  <div class="search-section">
+    <h2>Check Your Score</h2>
+    <input type="text" id="searchBox" placeholder="Enter your full name" />
+    <div class="result" id="searchResult"></div>
+  </div>
+
+  <script>
+    // Student scores
+    const students = [
+      { name: "Ali Khan", score: 45 },
+      { name: "Sarah Ahmed", score: 38 },
+      { name: "Mohamed Salah", score: 50 },
+      { name: "Zara Hussain", score: 42 },
+      { name: "Omar Farooq", score: 30 },
+      { name: "Ayesha Noor", score: 44 },
+      { name: "Bilal Sheikh", score: 25 }
+    ];
+
+    // Bar chart
+    const names = students.map(s => s.name);
+    const scores = students.map(s => s.score);
+
+    new Chart(document.getElementById("barChart"), {
+      type: 'bar',
+      data: {
+        labels: names,
+        datasets: [{
+          label: 'Scores out of 50',
+          data: scores,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Scores by Student'
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 50
+          }
+        }
+      }
+    });
+
+    // Pie chart - pass/fail
+    const passed = students.filter(s => s.score >= 35).length;
+    const failed = students.length - passed;
+
+    new Chart(document.getElementById("pieChart"), {
+      type: 'pie',
+      data: {
+        labels: ["Passed", "Failed"],
+        datasets: [{
+          data: [passed, failed],
+          backgroundColor: ['green', 'red']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Pass vs Fail Distribution'
+          }
+        }
+      }
+    });
+
+    // Search function
+    document.getElementById("searchBox").addEventListener("input", function () {
+      const query = this.value.trim().toLowerCase();
+      const resultBox = document.getElementById("searchResult");
+
+      if (!query) {
+        resultBox.innerHTML = '';
+        return;
+      }
+
+      const student = students.find(s => s.name.toLowerCase() === query);
+
+      if (student) {
+        resultBox.innerHTML = `<strong>${student.name}</strong>, your score is <strong>${student.score}</strong> out of 50.`;
+      } else {
+        resultBox.innerHTML = `Name not found. Please check spelling.`;
+      }
+    });
+  </script>
+
+</body>
+</html>
